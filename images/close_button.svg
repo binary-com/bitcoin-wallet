@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="15px" height="15px" viewBox="0 0 15 15" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 43.2 (39069) - http://www.bohemiancoding.com/sketch -->
+    <title>Shape</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="bitcoin-wallet-transfer-page" transform="translate(-843.000000, -438.000000)" fill-rule="nonzero" fill="#2A3052">
+            <path d="M850.5,438 C846.363158,438 843,441.363158 843,445.5 C843,449.636842 846.363158,453 850.5,453 C854.636842,453 858,449.636842 858,445.5 C858,441.363158 854.636842,438 850.5,438 Z M854.431579,447.836842 L852.821053,449.447368 L850.484211,447.110526 L848.147368,449.447368 L846.536842,447.836842 L848.873684,445.5 L846.536842,443.163158 L848.147368,441.552632 L850.484211,443.889474 L852.821053,441.552632 L854.431579,443.163158 L852.094737,445.5 L854.431579,447.836842 Z" id="Shape"></path>
+        </g>
+    </g>
+</svg>
