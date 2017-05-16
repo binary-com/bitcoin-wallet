@@ -35,7 +35,7 @@ html {
 #container {
     margin: 0 auto;
     max-width: 50vw;
-    padding: 5px;
+    padding: 5px 10px;
     box-shadow: 0 0 8px #c2c2c2;
 }
 
@@ -69,6 +69,7 @@ form input {
 
 #close {
     float: right;
+    display: none;
 }
 
 #send_form button {
