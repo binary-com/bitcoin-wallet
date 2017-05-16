@@ -28,15 +28,19 @@ html {
     margin-left: 6px;
 }
 
-#container {
+#wrapper {
     padding: 5vh;
 }
 
-#content {
+#container {
     margin: 0 auto;
     max-width: 50vw;
-    padding: 40px;
+    padding: 5px;
     box-shadow: 0 0 8px #c2c2c2;
+}
+
+#content {
+    padding: 30px;
 }
 
 form input {
