@@ -30,11 +30,12 @@ html {
 
 #wrapper {
     padding: 5vh;
+    min-height: calc(90vh - 75px - 80px);
 }
 
 #container {
     margin: 0 auto;
-    max-width: 50vw;
+    max-width: 55vw;
     padding: 5px 10px;
     box-shadow: 0 0 8px #c2c2c2;
 }
@@ -72,18 +73,65 @@ form input {
     display: none;
 }
 
-#send_form button {
-    width: 15%;
-}
-
 #amount {
     width: 30%;
 }
 
 #to {
-    width: 45%;
+    width: 48%;
 }
 
 #transactions {
     margin-left: 15px;
+}
+
+#footer {
+    font-size: 70%;
+    padding: 20px;
+    height: 40px;
+    text-align: justify;
+}
+
+.content-inverse-color a {
+    text-decoration: underline;
+}
+
+#adr_wrapper {
+    overflow: scroll;
+}
+
+@media screen and (max-width: 959px) {
+    #footer {
+        height: 100%;
+    }
+    #container {
+        max-width: 85vw;
+    }
+    #to {
+        width: 70%;
+        display: block;
+        margin: 0 auto;
+    }
+    #amount, #send_form button {
+        display: block;
+        margin: 10px auto;
+        width: auto;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    #transactions {
+        margin-left: 0;
+        margin-bottom: 10px;
+    }
+    #to {
+        margin-top: 20px;
+    }
+    #pass_form input {
+        width: auto;
+        margin-bottom: 10px;
+    }
+    #content {
+        padding: 10px;
+    }Z
 }
