@@ -33,7 +33,7 @@
 </head>
 <body>
 <div id="header-binary">
-    <a href="https://www.binary.com">
+    <a target="_blank" href="https://www.binary.com">
         <img id="symbol-logo" src="https://style.binary.com/images/logo/symbol.svg" alt=""/>
         <img id="type-logo" src="https://style.binary.com/images/logo/type.svg" alt="Binary.com"/>
     </a>
@@ -74,6 +74,10 @@
             <p>View the source code of the wallet on <a href="https://github.com/binary-com/bitcoin-wallet" target="_blank">github</a>.</p>
         </div>
     </div>
+</div>
+
+<div id="footer" class="primary-bg-color content-inverse-color">
+    Notice: In the interest of keeping this wallet as user-friendly as possible, the wallet generates a private key from a password, and re-uses bitcoin addresses, both of which are not considered best practice. It is hence not recommended to use this wallet for large amounts of bitcoin. For larger bitcoin amounts we recommend using another wallet such as <a target="_blank" href="https://blockchain.info/wallet">blockchain.info/wallet</a>, <a target="_blank" href="https://copay.io">copay.io</a>, <a target="_blank" href="https://coinb.in">coinb.in</a>, <a target="_blank" href="https://breadwallet.com">breadwallet.com</a>, <a target="_blank" href="https://electrum.org">electrum.org</a>, <a target="_blank" href="https://wallet.mycelium.com">wallet.mycelium.com</a>, <a target="_blank" href="https://greenaddress.it">greenaddress.it</a>, <a target="_blank" href="https://bitcoinarmory.com">bitcoinarmory.com</a>, or <a target="_blank" href="https://multibit.org">multibit.org</a>.
 </div>
 
 <script>
@@ -117,7 +121,7 @@
         if (res === '') {
             $('to').value = '';
             $('amount').value = '';
-            $('status').innerHTML = '<a href="https://blockchain.info/tx/' + tx.txid() + '" target=_blank>Transaction</a> sent.';
+            $('status').innerHTML = '<a target="_blank" href="https://blockchain.info/tx/' + tx.txid() + '" target=_blank>Transaction</a> sent.';
         }
         else $('status').innerHTML = 'Error: ' + res;
 
