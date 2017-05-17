@@ -73,6 +73,10 @@ form input {
     display: none;
 }
 
+#close:hover {
+    cursor: pointer;
+}
+
 #amount {
     width: 30%;
 }
@@ -96,8 +100,8 @@ form input {
     text-decoration: underline;
 }
 
-#adr_wrapper {
-    overflow: scroll;
+#adr {
+    font-size: 85%;
 }
 
 @media screen and (max-width: 959px) {
@@ -133,5 +137,8 @@ form input {
     }
     #content {
         padding: 10px;
-    }Z
+    }
+    #adr {
+        font-size: 65%;
+    }
 }

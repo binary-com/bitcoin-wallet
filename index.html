@@ -58,7 +58,7 @@
             <form id="send_form" action="javascript:send_tx();">
                 <div class="left-text">
                     <p>To deposit funds to your wallet, send Bitcoin to this address:</p>
-                    <div id="adr_wrapper"><span id="adr"></span></div>
+                    <span id="adr"></span>
                     <div>
                         <h2 id="balance">Balance: </h2>
                         <span id="transactions"></span>
@@ -109,8 +109,8 @@
         $('close').show();
         $('to').focus();
 
-//        $('adr').innerHTML = "<b style='font-size:16px'>" + keys.adr + "</b>&ndash;[<a href='javascript:show_wif()'>wif</a>]&ndash;<br><span id=wif></span>";
-        $('adr').innerHTML = "<b style='font-size:16px'>" + keys.adr + "</b>";
+//        $('adr').innerHTML = "<b>" + keys.adr + "</b>&ndash;[<a href='javascript:show_wif()'>wif</a>]&ndash;<br><span id=wif></span>";
+        $('adr').innerHTML = "<b>" + keys.adr + "</b>";
         refresh();
         setInterval(refresh, 60000);
     }
