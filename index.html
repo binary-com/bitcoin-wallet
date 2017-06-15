@@ -31,7 +31,8 @@
     <script src="javascript/password_check/Mellt.js"></script>
     <!-- Make sure common-passwords.js is included AFTER Mellt.js -->
     <script src="javascript/password_check/common-passwords.js"></script>
-        <script type="text/javascript">
+    <style id="antiClickjack">body{display:none !important;}</style>
+    <script type="text/javascript">
         if (self === top) {
             var antiClickjack = document.getElementById("antiClickjack");
             antiClickjack.parentNode.removeChild(antiClickjack);
