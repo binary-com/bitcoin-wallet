@@ -118,15 +118,20 @@
         $('close').show();
         $('to').focus();
 
-//        $('adr').innerHTML = "<b>" + keys.adr + "</b>&ndash;[<a href='javascript:show_wif()'>wif</a>]&ndash;<br><span id=wif></span>";
-        $('adr').innerHTML = "<b>" + keys.adr + "</b>";
+        $('adr').innerHTML = "<b>" + keys.adr + "</b>&ndash; <a href='javascript:show_wif()'><span id='key_action'>Show</span> my private key</a><br><span id=wif></span>";
         refresh();
         setInterval(refresh, 60000);
     }
 
-//    function show_wif() {
-//        $('wif').innerHTML = ($('wif').innerHTML == '' ? keys.wif : '');
-//    }
+    function show_wif() {
+        if ($('wif').innerHTML == '') {
+            $('wif').innerHTML = keys.wif;
+            $('key_action').innerHTML = 'Hide';
+        } else {
+            $('wif').innerHTML = '';
+            $('key_action').innerHTML = 'Show';
+        }
+    }
 
     function broadcast_cb(res) {
         if (res === '') {
