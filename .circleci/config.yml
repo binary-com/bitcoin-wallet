@@ -72,5 +72,5 @@ workflows:
       - release:
           filters:
             branches:
-              only: /^gh-pages$/
+              only: /^master$/
 
