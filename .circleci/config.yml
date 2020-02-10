@@ -37,7 +37,7 @@ commands:
       - run:
           name: "Compress"
           command: |
-            tar -cvf artifact.tar *
+            tar -cvf artifact.tar --exclude='README.md' --exclude='Dockerfile' --exclude='default.conf' * 
       - run:
           name: "Tag commit id as artifact identifer"
           command: echo "${CIRCLE_SHA1}" > artifact-info.txt
