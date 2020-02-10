@@ -93,8 +93,8 @@ jobs:
     steps:
       - git_checkout_from_cache
       - compress
-      - upload_artifact
-      - upload_checksum
+      - upload_artifact  # uploading build artifact to S3 bucket for deployment with commit id as metadata
+      - upload_checksum  # uploading commut id as artifact checksum id 
       - docker_build
       - docker_push
       - k8s_deploy
@@ -106,5 +106,5 @@ workflows:
           filters:
             branches:
               only: /^master$/
-          context: binary-frontend-deploy
+          context: binary-frontend-artifact-upload # context name needed to be changed here
 
