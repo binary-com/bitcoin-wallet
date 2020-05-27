@@ -1,7 +1,6 @@
 version: 2.1
 orbs:
   k8s: circleci/kubernetes@0.7.0
-  s3: circleci/aws-s3@1.0.13
 commands:
   git_checkout_from_cache:
     description: "Git checkout and save cache"
@@ -31,36 +30,31 @@ commands:
           key: source-v1-{{ .Branch }}-{{ .Revision }}
           paths:
             - ".git"
-  compress:
-    description: "Compress"
+  deploy:
+    description: "Deploy to static branches"
+    parameters:
+      target_branch:
+        type: string
     steps:
+      - checkout
+      - attach_workspace:
+          at: www
       - run:
-          name: "Compress"
+          name: Tag build
+          command: echo "<< parameters.target_branch >> $(date)" > www/version
+      - run:
+          name: Install and configure dependencies
           command: |
-            tar -cvf artifact.tar --exclude='README.md' --exclude='Dockerfile' --exclude='default.conf' * 
+            sudo npm install -g gh-pages@2.0.1
+            git config user.email "ci-build@binary.com"
+            git config user.name "ci-build"
+      - add_ssh_keys:
+          fingerprints:
+            - "95:22:af:3a:82:d8:21:a5:e1:d9:79:52:89:50:2f:17"
       - run:
-          name: "Tag commit id as artifact identifer"
-          command: echo "${CIRCLE_SHA1}" > artifact-info.txt
-  upload_artifact:
-    description: "upload artifact to s3"
-    steps:
-      - s3/copy:    
-          from: artifact.tar
-          to: 's3://${CONTEXT_ARTIFACT_S3_BUCKET}/${CIRCLE_PROJECT_REPONAME}/'
-          aws-access-key-id: env_CONTEXT_ARTIFACT_S3_AWS_ACCESS_KEY_ID
-          aws-secret-access-key: env_CONTEXT_ARTIFACT_S3_AWS_SECRET_ACCESS_KEY
-          aws-region: env_CONTEXT_ARTIFACT_S3_AWS_REGION
-          arguments: '--metadata "{\"x-amz-artifact-id\": \"${CIRCLE_SHA1}\" }"'
-  upload_checksum:
-    description: "upload artifact checksum to s3"
-    steps:
-      - s3/copy:    
-          from: artifact-info.txt
-          to: 's3://${CONTEXT_ARTIFACT_S3_BUCKET}/${CIRCLE_PROJECT_REPONAME}/'
-          aws-access-key-id: env_CONTEXT_ARTIFACT_S3_AWS_ACCESS_KEY_ID
-          aws-secret-access-key: env_CONTEXT_ARTIFACT_S3_AWS_SECRET_ACCESS_KEY
-          aws-region: env_CONTEXT_ARTIFACT_S3_AWS_REGION
-  docker_build:
+          name: Deploy docs to gh-pages branch
+          command: gh-pages -d www --branch << parameters.target_branch >>
+  docker_build_push:
     description: "Build Docker image"
     steps:
       - setup_remote_docker
@@ -68,9 +62,6 @@ commands:
           name: Building docker image
           command: |
             docker build -t ${DOCKHUB_ORGANISATION}/binary-bitcoin-wallet:${CIRCLE_SHA1} -t ${DOCKHUB_ORGANISATION}/binary-bitcoin-wallet:latest .
-  docker_push:
-    description: "Push image to docker hub"
-    steps:
       - run: 
           name: Pushing Image to docker hub
           command: |
@@ -100,24 +91,34 @@ commands:
               fi
             done  
 jobs:
-  release:
+  release_production:
+    docker:
+      - image: circleci/node:8.10.0-stretch
+    steps:
+      - deploy:
+          target_branch: "production"
+  release_aws_production:
     docker:
       - image: circleci/ruby:2.6.5
     steps:
       - git_checkout_from_cache
-      - compress
-      - upload_artifact  # uploading build artifact to S3 bucket for deployment with commit id as metadata
-      - upload_checksum  # uploading commut id as artifact checksum id 
-      - docker_build
-      - docker_push
+      - docker_build_push
       - k8s_deploy
       
 workflows:
   release:
     jobs:
-      - release:
+      - release_production:
           filters:
             branches:
-              only: /^master$/
-          context: binary-frontend-artifact-upload # context name needed to be changed here
+              ignore: /.*/
+            tags:
+              only: /^production.*/
+      - release_aws_production:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^aws\-production.*/
+          context: binary-frontend-artifact-upload
 
