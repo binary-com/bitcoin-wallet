@@ -104,10 +104,9 @@ jobs:
       - image: circleci/ruby:2.6.5
     steps:
       - git_checkout_from_cache
-      # - compress
-      # - docker_build
-      # - docker_push
-      # - k8s_deploy
+      - docker_build
+      - docker_push
+      - k8s_deploy
       - deploy_gh_pages:
           target_branch: "production"
 
