@@ -1,7 +1,6 @@
 version: 2.1
 orbs:
   k8s: circleci/kubernetes@0.7.0
-  s3: circleci/aws-s3@1.0.13
 commands:
   git_checkout_from_cache:
     description: "Git checkout and save cache"
@@ -12,8 +11,8 @@ commands:
             - source-v1-{{ .Branch }}-{{ .Revision }}
             - source-v1-{{ .Branch }}-
             - source-v1-
-      - run: 
-          name: Fetch git tags 
+      - run:
+          name: Fetch git tags
           command: |
             mkdir -p ~/.ssh
             echo 'github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ== ' >> ~/.ssh/known_hosts
@@ -24,64 +23,64 @@ commands:
             fi
       - checkout
       - run:
-          name: Compress git objects 
+          name: Compress git objects
           command: git gc
       - save_cache:
           name: Git save cache
           key: source-v1-{{ .Branch }}-{{ .Revision }}
           paths:
             - ".git"
-  compress:
-    description: "Compress"
-    steps:
-      - run:
-          name: "Compress"
-          command: |
-            tar -cvf artifact.tar --exclude='README.md' --exclude='Dockerfile' --exclude='default.conf' * 
-      - run:
-          name: "Tag commit id as artifact identifer"
-          command: echo "${CIRCLE_SHA1}" > artifact-info.txt
-  upload_artifact:
-    description: "upload artifact to s3"
-    steps:
-      - s3/copy:    
-          from: artifact.tar
-          to: 's3://${CONTEXT_ARTIFACT_S3_BUCKET}/${CIRCLE_PROJECT_REPONAME}/'
-          aws-access-key-id: env_CONTEXT_ARTIFACT_S3_AWS_ACCESS_KEY_ID
-          aws-secret-access-key: env_CONTEXT_ARTIFACT_S3_AWS_SECRET_ACCESS_KEY
-          aws-region: env_CONTEXT_ARTIFACT_S3_AWS_REGION
-          arguments: '--metadata "{\"x-amz-artifact-id\": \"${CIRCLE_SHA1}\" }"'
-  upload_checksum:
-    description: "upload artifact checksum to s3"
-    steps:
-      - s3/copy:    
-          from: artifact-info.txt
-          to: 's3://${CONTEXT_ARTIFACT_S3_BUCKET}/${CIRCLE_PROJECT_REPONAME}/'
-          aws-access-key-id: env_CONTEXT_ARTIFACT_S3_AWS_ACCESS_KEY_ID
-          aws-secret-access-key: env_CONTEXT_ARTIFACT_S3_AWS_SECRET_ACCESS_KEY
-          aws-region: env_CONTEXT_ARTIFACT_S3_AWS_REGION
   docker_build:
     description: "Build Docker image"
     steps:
       - setup_remote_docker
-      - run: 
+      - run:
           name: Building docker image
           command: |
             docker build -t ${DOCKHUB_ORGANISATION}/binary-bitcoin-wallet:${CIRCLE_SHA1} -t ${DOCKHUB_ORGANISATION}/binary-bitcoin-wallet:latest .
   docker_push:
     description: "Push image to docker hub"
     steps:
-      - run: 
+      - run:
           name: Pushing Image to docker hub
           command: |
             echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
             docker push ${DOCKHUB_ORGANISATION}/binary-bitcoin-wallet:${CIRCLE_SHA1}
             docker push ${DOCKHUB_ORGANISATION}/binary-bitcoin-wallet:latest
+  deploy_gh_pages:
+    description: "Deploy to static branches"
+    parameters:
+      target_branch:
+        type: string
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Tag build
+          command: echo "<< parameters.target_branch >>-$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > ./version
+      - run:
+          name: Install and configure dependencies
+          command: |
+            curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+            sudo apt install nodejs
+            mkdir "/home/circleci/.npm-packages"
+            npm config set prefix "/home/circleci/.npm-packages"
+            npm install -g gh-pages@2.0.1
+            git config user.email "ci-build@binary.com"
+            git config user.name "ci-build"
+      - add_ssh_keys:
+          fingerprints:
+            - "01:67:4a:6d:26:9c:70:c4:1a:60:91:88:d9:dd:f0:83"
+      - run:
+          name: Deploy docs to gh-pages branch
+          command: /home/circleci/.npm-packages/bin/gh-pages -d _site --branch << parameters.target_branch >> --message '[skip ci]'
+
   k8s_deploy:
     description: "Deploy to k8s cluster"
     steps:
       - k8s/install-kubectl
-      - run: 
+      - run:
           name: Deploying to k8s cluster for service binary-bitcoin-wallet
           command: |
             for SERVER_ID in {1..5}
@@ -98,26 +97,27 @@ commands:
                 echo $CA_CRT | base64 --decode > ca.crt
                 kubectl --server=${KUBE_SERVER} --certificate-authority=ca.crt --token=$SERVICEACCOUNT_TOKEN set image deployment/bitcoin-wallet-binary-com bitcoin-wallet-binary-com=${DOCKHUB_ORGANISATION}/binary-bitcoin-wallet:${CIRCLE_SHA1}
               fi
-            done  
+            done
 jobs:
-  release:
+  release_production:
     docker:
       - image: circleci/ruby:2.6.5
     steps:
       - git_checkout_from_cache
-      - compress
-      - upload_artifact  # uploading build artifact to S3 bucket for deployment with commit id as metadata
-      - upload_checksum  # uploading commut id as artifact checksum id 
-      - docker_build
-      - docker_push
-      - k8s_deploy
-      
+      # - compress
+      # - docker_build
+      # - docker_push
+      # - k8s_deploy
+      - deploy_gh_pages:
+          target_branch: "production"
+
 workflows:
   release:
     jobs:
-      - release:
+      - release_production:
           filters:
             branches:
-              only: /^master$/
+              ignore: /.*/
+            tags:
+              only: /^production.*/
           context: binary-frontend-artifact-upload # context name needed to be changed here
-
