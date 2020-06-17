@@ -71,7 +71,7 @@ commands:
             git config user.name "ci-build"
       - add_ssh_keys:
           fingerprints:
-            - "01:67:4a:6d:26:9c:70:c4:1a:60:91:88:d9:dd:f0:83"
+            - "5e:29:b6:17:40:54:7c:c7:45:b5:9a:c1:28:c2:6a:1a"
       - run:
           name: Deploy docs to gh-pages branch
           command: /home/circleci/.npm-packages/bin/gh-pages -d _site --branch << parameters.target_branch >> --message '[skip ci]'
