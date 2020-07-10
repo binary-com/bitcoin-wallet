@@ -109,10 +109,10 @@ jobs:
       - image: circleci/ruby:2.6.5
     steps:
       - git_checkout_from_cache
-      - docker_build_push
-      - k8s_deploy
       - deploy:
           target_branch: "production"
+      - docker_build_push
+      - k8s_deploy
       - notify_slack
 workflows:
   release:
