@@ -62,9 +62,7 @@ commands:
           command: |
             curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
             sudo apt install nodejs
-            mkdir "/home/circleci/.npm-packages"
-            npm config set prefix "/home/circleci/.npm-packages"
-            npm install -g gh-pages@2.0.1
+            sudo npm install gh-pages@2.0.1
             git config user.email "ci-build@binary.com"
             git config user.name "ci-build"
       - add_ssh_keys:
@@ -72,7 +70,7 @@ commands:
             - "5e:29:b6:17:40:54:7c:c7:45:b5:9a:c1:28:c2:6a:1a"
       - run:
           name: Deploy docs to gh-pages branch
-          command: /home/circleci/.npm-packages/bin/gh-pages -d ./ --branch << parameters.target_branch >> --message '[skip ci]'
+          command: node ./node_modules/gh-pages/bin/gh-pages -d ./ --branch << parameters.target_branch >> --message '[skip ci]'
   k8s_deploy:
     description: "Deploy to k8s cluster"
     steps:
@@ -111,9 +109,14 @@ jobs:
       - git_checkout_from_cache
       - deploy:
           target_branch: "production"
+      - notify_slack
+  release_aws_production:
+    docker:
+      - image: circleci/ruby:2.6.5
+    steps:
+      - git_checkout_from_cache
       - docker_build_push
       - k8s_deploy
-      - notify_slack
 workflows:
   release:
     jobs:
@@ -123,4 +126,10 @@ workflows:
               ignore: /.*/
             tags:
               only: /^production.*/
-          context: binary-frontend-artifact-upload # context name needed to be changed here
+      - release_aws_production:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^production.*/
+          context: binary-frontend-artifact-upload
