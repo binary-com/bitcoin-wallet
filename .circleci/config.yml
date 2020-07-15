@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
   k8s: circleci/kubernetes@0.7.0
+  slack: circleci/slack@3.4.2
 commands:
   git_checkout_from_cache:
     description: "Git checkout and save cache"
@@ -30,7 +31,7 @@ commands:
           key: source-v1-{{ .Branch }}-{{ .Revision }}
           paths:
             - ".git"
-  docker_build:
+  docker_build_push:
     description: "Build Docker image"
     steps:
       - setup_remote_docker
@@ -38,16 +39,13 @@ commands:
           name: Building docker image
           command: |
             docker build -t ${DOCKHUB_ORGANISATION}/binary-bitcoin-wallet:${CIRCLE_SHA1} -t ${DOCKHUB_ORGANISATION}/binary-bitcoin-wallet:latest .
-  docker_push:
-    description: "Push image to docker hub"
-    steps:
       - run:
           name: Pushing Image to docker hub
           command: |
             echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
             docker push ${DOCKHUB_ORGANISATION}/binary-bitcoin-wallet:${CIRCLE_SHA1}
             docker push ${DOCKHUB_ORGANISATION}/binary-bitcoin-wallet:latest
-  deploy_gh_pages:
+  deploy:
     description: "Deploy to static branches"
     parameters:
       target_branch:
@@ -58,24 +56,21 @@ commands:
           at: ./
       - run:
           name: Tag build
-          command: echo "<< parameters.target_branch >>-$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > ./version
+          command: echo "<< parameters.target_branch >>-$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > version
       - run:
           name: Install and configure dependencies
           command: |
             curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
             sudo apt install nodejs
-            mkdir "/home/circleci/.npm-packages"
-            npm config set prefix "/home/circleci/.npm-packages"
-            npm install -g gh-pages@2.0.1
+            sudo npm install gh-pages@2.0.1
             git config user.email "ci-build@binary.com"
             git config user.name "ci-build"
       - add_ssh_keys:
           fingerprints:
-            - "5e:29:b6:17:40:54:7c:c7:45:b5:9a:c1:28:c2:6a:1a"
+            - "01:67:4a:6d:26:9c:70:c4:1a:60:91:88:d9:dd:f0:83"
       - run:
           name: Deploy docs to gh-pages branch
-          command: /home/circleci/.npm-packages/bin/gh-pages -d ./ --branch << parameters.target_branch >> --message '[skip ci]'
-
+          command: node ./node_modules/gh-pages/bin/gh-pages -d ./ --branch << parameters.target_branch >> --message '[skip ci]'
   k8s_deploy:
     description: "Deploy to k8s cluster"
     steps:
@@ -98,18 +93,30 @@ commands:
                 kubectl --server=${KUBE_SERVER} --certificate-authority=ca.crt --token=$SERVICEACCOUNT_TOKEN set image deployment/bitcoin-wallet-binary-com bitcoin-wallet-binary-com=${DOCKHUB_ORGANISATION}/binary-bitcoin-wallet:${CIRCLE_SHA1}
               fi
             done
+  notify_slack:
+    description: "Notify slack"
+    steps:
+      - slack/status:
+          include_project_field: false
+          failure_message: "Release failed for bitcoin-wallet.binary.com with version *$(cat version)*"
+          success_message: "Release succeeded for bitcoin-wallet.binary.com with version *$(cat version)*"
+          webhook: ${SLACK_WEBHOOK}
 jobs:
   release_production:
     docker:
       - image: circleci/ruby:2.6.5
     steps:
       - git_checkout_from_cache
-      - docker_build
-      - docker_push
-      - k8s_deploy
-      - deploy_gh_pages:
+      - deploy:
           target_branch: "production"
-
+      - notify_slack
+  release_aws_production:
+    docker:
+      - image: circleci/ruby:2.6.5
+    steps:
+      - git_checkout_from_cache
+      - docker_build_push
+      - k8s_deploy
 workflows:
   release:
     jobs:
@@ -119,4 +126,10 @@ workflows:
               ignore: /.*/
             tags:
               only: /^production.*/
-          context: binary-frontend-artifact-upload # context name needed to be changed here
+      - release_aws_production:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^production.*/
+          context: binary-frontend-artifact-upload
