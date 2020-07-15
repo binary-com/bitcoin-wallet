@@ -1,0 +1,144 @@
+html {
+    height: 100%;
+}
+
+#header-binary {
+    height: 55px;
+    background: #2a3052;
+    border-bottom: 4px solid #e98024;
+    text-align: center;
+    padding: 10px 0;
+}
+
+#header-binary a {
+    margin: 0 auto;
+    vertical-align: middle;
+    display: inline-block;
+    min-width: 220px;
+}
+
+#header-binary #symbol-logo {
+    vertical-align: middle;
+    height: 55px;
+}
+
+#header-binary #type-logo {
+    vertical-align: middle;
+    height: 37px;
+    margin-left: 6px;
+}
+
+#wrapper {
+    padding: 5vh;
+    min-height: calc(90vh - 75px - 80px);
+}
+
+#container {
+    margin: 0 auto;
+    max-width: 55vw;
+    padding: 5px 10px;
+    box-shadow: 0 0 8px #c2c2c2;
+}
+
+#content {
+    padding: 30px;
+}
+
+form input {
+    padding: 8px;
+}
+
+#pass_form input {
+    width: 60%;
+}
+
+#send_form {
+    display: none;
+}
+
+#wif {
+    color: #44484c;
+}
+
+.left-text {
+    text-align: left;
+}
+
+#balance {
+    display: inline-block;
+}
+
+#close {
+    float: right;
+    display: none;
+}
+
+#close:hover {
+    cursor: pointer;
+}
+
+#amount {
+    width: 30%;
+}
+
+#to {
+    width: 48%;
+}
+
+#transactions {
+    margin-left: 15px;
+}
+
+#footer {
+    font-size: 70%;
+    padding: 20px;
+    height: 40px;
+    text-align: justify;
+}
+
+.content-inverse-color a {
+    text-decoration: underline;
+}
+
+#adr {
+    font-size: 85%;
+}
+
+@media screen and (max-width: 959px) {
+    #footer {
+        height: 100%;
+    }
+    #container {
+        max-width: 85vw;
+    }
+    #to {
+        width: 70%;
+        display: block;
+        margin: 0 auto;
+    }
+    #amount, #send_form button {
+        display: block;
+        margin: 10px auto;
+        width: auto;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    #transactions {
+        margin-left: 0;
+        margin-bottom: 10px;
+    }
+    #to {
+        margin-top: 20px;
+    }
+    #pass_form input {
+        width: auto;
+        margin-bottom: 10px;
+    }
+    #content {
+        padding: 10px;
+    }
+    #adr {
+        font-size: 65%;
+    }
+}
